@@ -1,0 +1,5 @@
+/deps/
+.formatter.exs
+/_build
+.nix-mix
+.nix-hex
