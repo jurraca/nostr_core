@@ -1,6 +1,6 @@
 # NostrCore
 
-Minimal Elixir library for the Nostr protocol. Events, tags, filters, messages, Schnorr crypto, and NIP-19 identifiers — no bloat, no monorepo, no opinionated application framework.
+Minimal Elixir library for the Nostr protocol. Events, tags, filters, messages, Schnorr crypto, and NIP-19 identifiers.
 
 Built for composing into clients, relays, bots, and other Nostr libraries on the BEAM.
 
@@ -35,8 +35,6 @@ Requires Elixir ~> 1.18 and uses Elixir's built-in `JSON` module.
 - **Minimal NIP scope.** Core NIP-01 primitives plus NIP-16 kind classification and NIP-19 encodings.
 - **No per-kind modules.** The core is agnostic to NIP content schemas. Higher-level packages can parse kind-specific content.
 - **Safe public APIs.** Parsing, creation, and signing return `{:ok, value}` / `{:error, reason}`. Bang variants are available for trusted/static inputs.
-- **Built-in JSON.** Uses Elixir 1.18's `JSON` module. No `jason` dependency edge.
-- **Clean namespace.** `NostrCore.*` everywhere. No collisions with application namespaces.
 
 ## Quick Start
 
@@ -106,4 +104,3 @@ MIT
 ## Related
 
 - [`nostr_ex`](https://github.com/jurraca/nostr_ex) — WebSocket client built on `nostr_core`
-- [`noxir`](https://github.com/jurraca/noxir) — Relay implementation using `nostr_core`

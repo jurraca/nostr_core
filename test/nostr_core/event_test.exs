@@ -158,31 +158,4 @@ defmodule NostrCore.EventTest do
       assert event.id == String.duplicate("0", 64)
     end
   end
-
-  describe "kind classification" do
-    test "regular?/1" do
-      assert Event.regular?(1000) == true
-      assert Event.regular?(9999) == true
-      assert Event.regular?(1) == false
-      assert Event.regular?(Event.create!(1500)) == true
-    end
-
-    test "replaceable?/1" do
-      assert Event.replaceable?(10000) == true
-      assert Event.replaceable?(19999) == true
-      assert Event.replaceable?(20000) == false
-    end
-
-    test "ephemeral?/1" do
-      assert Event.ephemeral?(20000) == true
-      assert Event.ephemeral?(29999) == true
-      assert Event.ephemeral?(30000) == false
-    end
-
-    test "parameterized_replaceable?/1" do
-      assert Event.parameterized_replaceable?(30000) == true
-      assert Event.parameterized_replaceable?(39999) == true
-      assert Event.parameterized_replaceable?(40000) == false
-    end
-  end
 end

@@ -3,8 +3,7 @@ defmodule NostrCore.Event do
   Core Nostr event struct and operations.
 
   Implements NIP-01 event creation, ID computation, serialization, signing,
-  parsing, and validation. Also provides kind classification helpers
-  (replaceable, ephemeral, etc.) per NIP-16.
+  parsing, and validation.
 
   ## Fields
 
@@ -162,6 +161,9 @@ defmodule NostrCore.Event do
 
   Auto-populates `:pubkey` and `:id` if absent, then computes the Schnorr signature.
   """
+  # split this: never use existing pubkey, always compute fresh id.
+  # pattern match on nil in first clause
+  # you cannot sign an event who's ID has been provided beforehand
   @spec sign(t(), binary()) :: {:ok, t()} | {:error, sign_reason()}
   def sign(%__MODULE__{} = event, seckey) do
     with {:ok, derived_pubkey} <- NostrCore.Crypto.pubkey(seckey),
@@ -231,11 +233,11 @@ defmodule NostrCore.Event do
   responses even when validation fails.
   """
   @spec parse_unverified(term()) :: {:ok, t()} | {:error, parse_reason()}
-  def parse_unverified(event) when is_map(event) do
-    with {:ok, kind} <- parse_kind(event["kind"]),
-         {:ok, created_at} <- parse_timestamp(event["created_at"]),
-         {:ok, tags} <- parse_tags(Map.get(event, "tags", [])),
-         {:ok, content} <- parse_content(Map.get(event, "content", "")) do
+  def parse_unverified(%{kind: kind, tags: tags, content: content, created_at: created_at} = event) do
+    with {:ok, kind} <- parse_kind(kind),
+         {:ok, created_at} <- parse_timestamp(created_at),
+         {:ok, tags} <- parse_tags(tags),
+         {:ok, content} <- parse_content(content) do
       {:ok,
        %__MODULE__{
          id: Map.get(event, "id"),
@@ -249,6 +251,24 @@ defmodule NostrCore.Event do
     end
   end
 
+  @spec parse_unverified(term()) :: {:ok, t()} | {:error, parse_reason()}
+  def parse_unverified(%{"kind" => kind, "tags" => tags, "content" => content, "created_at" => created_at} = event) do
+    with {:ok, kind} <- parse_kind(kind),
+         {:ok, created_at} <- parse_timestamp(created_at),
+         {:ok, tags} <- parse_tags(tags),
+         {:ok, content} <- parse_content(content) do
+      {:ok,
+       %__MODULE__{
+         id: Map.get(event, "id"),
+         pubkey: Map.get(event, "pubkey"),
+         kind: kind,
+         tags: tags,
+         created_at: created_at,
+         content: content,
+         sig: Map.get(event, "sig")
+       }}
+    end
+  end
   def parse_unverified(_), do: {:error, :invalid_event}
 
   @doc """
@@ -262,38 +282,6 @@ defmodule NostrCore.Event do
   """
   @spec validate(t()) :: :ok | {:error, Validator.reason()}
   def validate(%__MODULE__{} = event), do: Validator.validate(event)
-
-  # ── Kind Classification (NIP-16) ─────────────────────────
-
-  @doc """
-  NIP-16 regular event: kind 1000–9999 (inclusive).
-  """
-  @spec regular?(non_neg_integer() | t()) :: boolean()
-  def regular?(%__MODULE__{kind: k}), do: regular?(k)
-  def regular?(k) when is_integer(k), do: k >= 1000 and k < 10000
-
-  @doc """
-  NIP-16 replaceable event: kind 10000–19999 (inclusive).
-  """
-  @spec replaceable?(non_neg_integer() | t()) :: boolean()
-  def replaceable?(%__MODULE__{kind: k}), do: replaceable?(k)
-  def replaceable?(k) when is_integer(k), do: k >= 10000 and k < 20000
-
-  @doc """
-  NIP-16 ephemeral event: kind 20000–29999 (inclusive).
-  """
-  @spec ephemeral?(non_neg_integer() | t()) :: boolean()
-  def ephemeral?(%__MODULE__{kind: k}), do: ephemeral?(k)
-  def ephemeral?(k) when is_integer(k), do: k >= 20000 and k < 30000
-
-  @doc """
-  NIP-16 parameterized replaceable event: kind 30000–39999 (inclusive).
-  """
-  @spec parameterized_replaceable?(non_neg_integer() | t()) :: boolean()
-  def parameterized_replaceable?(%__MODULE__{kind: k}), do: parameterized_replaceable?(k)
-
-  def parameterized_replaceable?(k) when is_integer(k),
-    do: k >= 30000 and k < 40000
 
   # ── Private helpers ──────────────────────────────────────
 
