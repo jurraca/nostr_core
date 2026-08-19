@@ -12,9 +12,16 @@ defmodule NostrCore.Kinds do
   def regular?(%Event{kind: k}), do: regular?(k)
   def regular?(k) when is_integer(k), do: k >= 1000 and k < 10000
 
-  @doc "Kind 10000–19999: replaceable events."
+  @doc """
+  Replaceable events: single-instance-per-pubkey events that overwrite older
+  versions on insert.
+
+  Covers NIP-01 kind `0` (profile metadata) and kind `3` (contact list), plus
+  the NIP-16 replaceable range `10000`–`19999`.
+  """
   @spec replaceable?(non_neg_integer() | Event.t()) :: boolean()
   def replaceable?(%Event{kind: k}), do: replaceable?(k)
+  def replaceable?(k) when k in [0, 3], do: true
   def replaceable?(k) when is_integer(k), do: k >= 10000 and k < 20000
 
   @doc "Kind 20000–29999: ephemeral events (not stored by relays)."

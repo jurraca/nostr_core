@@ -11,6 +11,12 @@ defmodule NostrCore.KindsTest do
     assert Kinds.replaceable?(10002) == true
     assert Kinds.replaceable?(20000) == false
 
+    # NIP-01 single-instance replaceable kinds
+    assert Kinds.replaceable?(0) == true
+    assert Kinds.replaceable?(3) == true
+    assert Kinds.replaceable?(1) == false
+    assert Kinds.replaceable?(2) == false
+
     assert Kinds.ephemeral?(20000) == true
     assert Kinds.ephemeral?(25000) == true
     assert Kinds.ephemeral?(10000) == false
@@ -27,5 +33,7 @@ defmodule NostrCore.KindsTest do
   test "accepts event structs" do
     assert Kinds.regular?(Event.create!(1500)) == true
     assert Kinds.ephemeral?(Event.create!(25000)) == true
+    assert Kinds.replaceable?(Event.create!(0)) == true
+    assert Kinds.replaceable?(Event.create!(3)) == true
   end
 end
