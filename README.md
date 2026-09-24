@@ -31,7 +31,7 @@ Requires Elixir ~> 1.18 and uses Elixir's built-in `JSON` module.
 
 ## Design principles
 
-- **Protocol-only.** No WebSocket client, no relay supervision tree, no agent framework, no storage layer.
+- **Protocol-only.** No WebSocket client, no relay handling, no storage layer.
 - **Minimal NIP scope.** Core NIP-01 primitives plus NIP-16 kind classification and NIP-19 encodings.
 - **No per-kind modules.** The core is agnostic to NIP content schemas. Higher-level packages can parse kind-specific content.
 - **Safe public APIs.** Parsing, creation, and signing return `{:ok, value}` / `{:error, reason}`. Bang variants are available for trusted/static inputs.
@@ -60,8 +60,12 @@ json = Message.serialize(Message.create_event(signed))
 For trusted/static values, bang constructors are available:
 
 ```elixir
-event = Event.create!(1, content: "trusted")
-signed = Event.sign!(event, seckey)
+iex(1)> event = Event.create!(1, content: "Hello Joe")
+iex(2)> event.content
+"Hello Joe"
+iex(3)> signed = Event.sign!(event, seckey)
+iex(4)> signed.id
+"e436225..."
 ```
 
 ## Filters
