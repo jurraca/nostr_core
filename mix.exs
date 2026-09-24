@@ -27,9 +27,10 @@ defmodule NostrCore.MixProject do
 
   defp deps do
     [
-      {:lib_secp256k1, "~> 0.7"},
+      {:lib_secp256k1, "~> 0.8.0"},
       {:bechamel, "~> 1.1"},
-      {:ex_doc, "~> 0.40", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.40.4", only: :dev, runtime: false},
+      {:deps_nix, "~> 3.1.1", only: :dev, runtime: false}
     ]
   end
 
